@@ -97,11 +97,14 @@ class ParticipantsUi(
             InputUtil.getString("Please Enter Profile S.No, You Can Enter Multiple S.No's by Comma(,) Separator")
         if (profileSnoStr == "--q") return
         val userNumbers = getUsers(profileSnoStr)
-        when (i) {
-            2 -> removeUsers(userNumbers)
-            3 -> makeGroupAdmin(userNumbers)
-            4 -> dismissAsGroupAdmin(userNumbers)
-        }
+        getGroup()
+        if (group.admins.contains(number)) {
+            when (i) {
+                2 -> removeUsers(userNumbers)
+                3 -> makeGroupAdmin(userNumbers)
+                4 -> dismissAsGroupAdmin(userNumbers)
+            }
+        } else println("\nSorry you are not group admin now")
     }
 
     private fun getUsers(profileSnoStr: String): List<Long> {

@@ -70,11 +70,11 @@ class GroupUi(
             writer.writeObject(Request("group", "checkAvailability", gName))
         }
         group.groupName = gName
-//        getGroup()
-//        if (group.admins.contains(number))
-        writer.writeObject(Request("group", "update", group))
-        writer.reset()
-//        else println("Sorry you are not group")
+        getGroup()
+        if (group.admins.contains(number)) {
+            writer.writeObject(Request("group", "update", group))
+            writer.reset()
+        } else println("\nSorry you are not group admin now")
     }
 
     private fun leaveGroup() {
