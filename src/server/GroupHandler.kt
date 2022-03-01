@@ -26,6 +26,22 @@ class GroupHandler(private val clientHandler: ClientHandler, private val chatHan
         clientHandler.writer.writeObject(false)
     }
 
+    override fun addUser(data: Any) {
+        val (number, groupId) = data as List<String>
+        val group = Server.groups[groupId]
+        if (Server.users.contains(number.toLong()) &&
+            clientHandler.client.number != number.toLong() &&
+            group?.users?.contains(number.toLong()) == false
+        ) {
+            val user = Server.users[number.toLong()]
+            user?.groups?.add(groupId)
+            group.users.add(number.toLong())
+            clientHandler.writer.writeObject(group)
+            val message = "${clientHandler.client.name} added ${user?.name} in the group"
+            chatHandler.broadcastMessage(Message(0L, "", message, groupId))
+        } else clientHandler.writer.writeObject(null)
+    }
+
     override fun updateGroup(data: Any) {
         val group = data as Group
         if (Server.groups.contains(group.id)) {
@@ -90,8 +106,9 @@ class GroupHandler(private val clientHandler: ClientHandler, private val chatHan
     }
 
     private fun checkGroupNameAvailability(groupName: String): String {
+        if (groupName == "") return groupName
         val groupId = Server.groups.values.find { i -> i.groupName == groupName }?.id
-        return if (groupName == "" || groupId == null) "" else groupId
+        return groupId ?: ""
     }
 
     private fun broadcastGroupUpdateMessage(oldGroup: Group, group: Group) {

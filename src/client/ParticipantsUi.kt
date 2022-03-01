@@ -31,12 +31,15 @@ class ParticipantsUi(
                 getProfiles()
                 displayParticipants()
                 val request1 = "1) Go Back"
-                val request2 = "\n2) Remove Users\n3) Make Group Admin\n4) Dismiss as Group Admin"
-                val request3 = "\nPlease Enter Your Choice"
-                val request = "$request1 ${if (isAdmin && profiles.isNotEmpty()) request2 else ""} $request3"
+                val request2 = "\n2) Add User"
+                val request3 = "\n3) Remove Users\n4) Make Group Admin\n5) Dismiss as Group Admin"
+                val request4 = "\nPlease Enter Your Choice"
+                val request =
+                    "$request1 ${if (isAdmin) request2 + if (profiles.isNotEmpty()) request3 else "" else ""} $request4"
                 when (val input = InputUtil.getInt(request)) {
                     -1, 1 -> return
-                    2, 3, 4 -> if (profiles.isNotEmpty()) adminOptions(input)
+                    3, 4, 5 -> if (profiles.isNotEmpty() && isAdmin) adminOptions(input)
+                    2 -> if (isAdmin) addUsers()
                     else -> println("Please Enter Valid Option")
                 }
             }
@@ -100,9 +103,9 @@ class ParticipantsUi(
         getGroup()
         if (group.admins.contains(number)) {
             when (i) {
-                2 -> removeUsers(userNumbers)
-                3 -> makeGroupAdmin(userNumbers)
-                4 -> dismissAsGroupAdmin(userNumbers)
+                3 -> removeUsers(userNumbers)
+                4 -> makeGroupAdmin(userNumbers)
+                5 -> dismissAsGroupAdmin(userNumbers)
             }
         } else println("\nSorry you are not group admin now")
     }
@@ -117,6 +120,20 @@ class ParticipantsUi(
             }
         }
         return userNumbers.toList()
+    }
+
+    private fun addUsers() {
+        val numberInp = InputUtil.getPhoneNumber()
+        if (numberInp == -1L) return
+        getGroup()
+        if (group.admins.contains(number)) {
+            writer.writeObject(Request("group", "adduser", listOf(numberInp.toString(), groupId)))
+            group = try {
+                reader.readObject() as Group
+            } catch (_: Exception) {
+                group
+            }
+        } else println("\nSorry you are not group admin now")
     }
 
     private fun getProfiles() {

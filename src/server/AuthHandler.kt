@@ -14,7 +14,8 @@ class AuthHandler(private val clientHandler: ClientHandler) : AuthHandlerService
             if (user?.password == authData.password) {
                 val profile = Profile(user.name, user.number, "", user.groups)
                 clientHandler.client = profile
-                Server.clients[profile.number] = clientHandler
+                if (Server.clients.contains(profile.number)) Server.clients[profile.number]?.add(clientHandler)
+                else Server.clients[profile.number] = mutableListOf(clientHandler)
                 return clientHandler.writer.writeObject(profile)
             }
         }
@@ -28,7 +29,7 @@ class AuthHandler(private val clientHandler: ClientHandler) : AuthHandlerService
             val profile = Profile(user.name, user.number, "", user.groups)
             Server.users[authData.number] = user
             clientHandler.client = profile
-            Server.clients[profile.number] = clientHandler
+            Server.clients[profile.number] = mutableListOf(clientHandler)
             return clientHandler.writer.writeObject(profile)
         }
         clientHandler.writer.writeObject(null)

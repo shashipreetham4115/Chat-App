@@ -1,5 +1,6 @@
 package server
 
+import entities.Group
 import entities.Profile
 import server.services.UserHandlerServices
 
@@ -9,9 +10,14 @@ class UserHandler(private val clientHandler: ClientHandler) : UserHandlerService
         val groupIds = data as List<*>
         val groupNames = mutableListOf<String>()
         for (id in groupIds) {
-            if (Server.groups.contains(id)) {
-                Server.groups[id]?.groupName?.let { groupNames.add(it) }
-            }
+            val group = Server.groups[id]
+            val groupName =
+                if (group?.isPrivate == true) {
+                    val userNumber =
+                        if (group.users.first() == clientHandler.client.number) group.users.last() else group.users.first()
+                    Server.users[userNumber]?.name
+                } else (group?.groupName ?: "Unknown") + " Group"
+            groupNames.add(groupName!!)
         }
         clientHandler.writer.writeObject(groupNames as List<String>)
         clientHandler.writer.reset()
@@ -45,6 +51,27 @@ class UserHandler(private val clientHandler: ClientHandler) : UserHandlerService
         }
         clientHandler.writer.writeObject(userProfiles as List<Profile>)
         clientHandler.writer.reset()
+    }
+
+    override fun updateProfile(data: Any) {
+        val number = data as Long
+        val user = Server.users[number]
+        val profile = user?.let { Profile(it.name, user.number, "", user.groups) }
+        clientHandler.writer.writeObject(profile)
+        clientHandler.writer.reset()
+    }
+
+    override fun startPrivateChat(data: Any) {
+        val number = data as Long
+        if (Server.users.contains(number) && number != clientHandler.client.number) {
+            val newGroup = Group("", true)
+            newGroup.users.add(number)
+            newGroup.users.add(clientHandler.client.number)
+            Server.groups[newGroup.id] = newGroup
+            clientHandler.client.groups.add(newGroup.id)
+            Server.users[number]?.groups?.add(newGroup.id)
+            clientHandler.writer.writeObject(newGroup.id)
+        } else clientHandler.writer.writeObject(null)
     }
 
 }

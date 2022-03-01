@@ -15,10 +15,12 @@ class ChatHandler(private val clientHandler: ClientHandler) : ChatHandlerService
             }
             Server.messages.add(message)
             for (i in userNumbers) {
-                val userHandler = Server.clients[i] ?: continue
-                if (userHandler.client.active == message.group && userHandler.client.number != message.sender) {
-                    userHandler.writer.writeObject(message)
-                    userHandler.writer.flush()
+                val userHandlers = Server.clients[i] ?: continue
+                for (userHandler in userHandlers) {
+                    if (userHandler.client.active == message.group && userHandler != clientHandler) {
+                        userHandler.writer.writeObject(message)
+                        userHandler.writer.flush()
+                    }
                 }
             }
         }
@@ -33,7 +35,7 @@ class ChatHandler(private val clientHandler: ClientHandler) : ChatHandlerService
         val users = Server.groups[groupId]?.users
         if (users != null) {
             for (number in users) {
-                userNames[number] = Server.clients[number]?.client?.name ?: ""
+                userNames[number] = Server.users[number]?.name ?: ""
             }
         }
         clientHandler.writer.writeObject(userNames)

@@ -12,7 +12,7 @@ import java.util.concurrent.Executors
 class Server(private val serverSocket: ServerSocket) : ServerServices {
 
     companion object {
-        val clients: MutableMap<Long, ClientHandler> = mutableMapOf()
+        val clients: MutableMap<Long, MutableList<ClientHandler>> = mutableMapOf()
         val messages: MutableList<Message> = mutableListOf()
         val users: MutableMap<Long, User> = mutableMapOf()
         val groups: MutableMap<String, Group> = mutableMapOf()

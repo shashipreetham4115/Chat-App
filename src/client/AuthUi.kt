@@ -45,6 +45,15 @@ class AuthUi(
         authenticate()
     }
 
+    override fun updateProfile() {
+        try {
+            writer.writeObject(Request("user", "updateProfile", loggedInUser?.number ?: ""))
+            loggedInUser = reader.readObject() as Profile
+        } catch (_: Exception) {
+            errHandler.closeConnection()
+        }
+    }
+
     private fun signIn() {
         val number = InputUtil.getPhoneNumber()
         if (number == -1L) return
@@ -63,6 +72,7 @@ class AuthUi(
             println("Incorrect Number or Password")
             password = InputUtil.getPassword()
         }
+        if (loggedInUser != null) println("\nWelcome back ${loggedInUser?.name}")
     }
 
     private fun signUp() {
@@ -83,5 +93,6 @@ class AuthUi(
             println("\nPhone Number Already in Use Please Use Another")
             null
         }
+        if (loggedInUser != null) println("\nWelcome ${loggedInUser?.name}")
     }
 }

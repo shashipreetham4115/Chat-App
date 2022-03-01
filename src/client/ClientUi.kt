@@ -3,7 +3,6 @@ package client
 import client.services.*
 import client.utils.InputUtil
 import entities.Request
-import java.io.IOException
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.util.concurrent.ExecutorService
@@ -21,16 +20,17 @@ class ClientUi(
         val executor: ExecutorService = Executors.newSingleThreadExecutor()
     }
 
+
     override fun displayMenu() {
         try {
-            while (true) {
+            loop@ while (true) {
+                authUi.updateProfile()
                 val groupIds = AuthUi.loggedInUser?.groups ?: mutableListOf()
                 writer.writeObject(Request("user", "getUserGroups", groupIds))
                 writer.reset()
                 val groups = try {
                     reader.readObject() as List<String>
                 } catch (_: Exception) {
-                    println("Error in Fetching the groups")
                     listOf<String>()
                 }
                 val length = groups.size
@@ -38,23 +38,44 @@ class ClientUi(
                 for ((sno, group) in groups.withIndex()) {
                     println("${sno + 1}) $group")
                 }
-                println("${length + 1}) Join New Group")
-                println("${length + 2}) Create New Group")
-                println("${length + 3}) Change Your Name")
-                println("${length + 4}) Sign out")
+                val options =
+                    listOf(
+                        "Join New Group",
+                        "Create New Group",
+                        "Change Your Name",
+                        "Start Private Chat",
+                        "Refresh",
+                        "Sign out"
+                    )
+                for ((sno, str) in options.withIndex()) println("${length + sno + 1}) $str")
                 when (val input = InputUtil.getInt("Please Enter Your Choice")) {
                     -1 -> return
                     in 1..groups.size -> groupUi.displayMenu(groupIds[input - 1])
                     length + 1 -> joinNewGroup()
                     length + 2 -> createNewGroup()
                     length + 3 -> changeUserName()
-                    length + 4 -> return authUi.signOut()
+                    length + 4 -> startPrivateChat()
+                    length + 5 -> continue@loop
+                    length + 6 -> return authUi.signOut()
                     else -> println("Please Enter Valid Option")
                 }
             }
         } catch (_: Exception) {
             errHandler.closeConnection()
         }
+    }
+
+    private fun startPrivateChat() {
+        val number = InputUtil.getPhoneNumber()
+        if (number == -1L) return
+        writer.writeObject(Request("user", "StartPrivateChat", number))
+        val newGroupId = try {
+            reader.readObject() as String
+        } catch (_: Exception) {
+            println("\nPlease Enter Valid Number")
+            return
+        }
+        groupUi.displayMenu(newGroupId)
     }
 
     private fun changeUserName() {

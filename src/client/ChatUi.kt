@@ -39,7 +39,10 @@ class ChatUi(
             } catch (_: Exception) {
                 mapOf<Long, String>()
             }
-            printChat(messages, userNames)
+            println()
+            for (message in messages) {
+                printChat(message, userNames)
+            }
             thread = ClientUi.executor.submit(messageWriter())
             messageReader()
         } catch (_: Exception) {
@@ -47,38 +50,32 @@ class ChatUi(
         }
     }
 
-    private fun printChat(messages: List<Message>, userNames: Map<Long, String>) {
-        for (message in messages) {
-            if (message.sender == number) {
-                printDate(message.content, message.sendTime)
-                println()
-            } else {
-                val date = message.sendTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a"))
-                var name =
-                    if (userNames[message.sender] == "" || userNames[message.sender] == null) message.senderName else userNames[message.sender]
-                if (name == "") name = "\b"
-                println("[$date $name] ${message.content}")
-            }
+    private fun printChat(message: Message, userNames: Map<Long, String> = mapOf()) {
+        if (message.sender == number) {
+            printDate(message.content, message.sendTime)
+            println()
+        } else {
+            val date = message.sendTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a"))
+            var name =
+                if (userNames[message.sender] == "" || userNames[message.sender] == null) message.senderName else userNames[message.sender]
+            if (name == "") name = "\b"
+            println("\r[$date $name] ${message.content}")
         }
     }
 
 
-    // reads messages from console
+    // reads message from console
     private fun messageReader() {
         try {
             printDate("")
             while (socket.isConnected && !thread.isDone) {
                 var message = ""
                 if (active) message = readLine() ?: ""
+//                name = AuthUi.loggedInUser?.name ?: ""
                 if (message == "--q") active = false
                 if (message != "") {
-                    writer.writeObject(
-                        Request(
-                            "message",
-                            "broadcast",
-                            Message(number, name, message, groupId)
-                        )
-                    )
+                    val messageObj = Message(number, name, message, groupId)
+                    writer.writeObject(Request("message", "broadcast", messageObj))
                     writer.flush()
                     if (message != "--q") printDate("")
                 }
@@ -88,7 +85,7 @@ class ChatUi(
         }
     }
 
-    // writes messages to the console
+    // writes message to the console
     private fun messageWriter(): Runnable {
         return Runnable {
             try {
@@ -98,13 +95,9 @@ class ChatUi(
                     } catch (_: Exception) {
                         continue
                     }
-                    if (message.content == "--q") {
-                        active = false
-                        break
-                    }
-                    val date = message.sendTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a"))
-                    val name = if (message.senderName == "") "\b" else message.senderName
-                    println("\r[$date $name] ${message.content}")
+                    if (message.content == "--q") active = false
+                    if (!active) break
+                    printChat(message)
                     printDate("")
                 }
             } catch (ex: Exception) {

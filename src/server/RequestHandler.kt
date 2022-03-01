@@ -34,6 +34,7 @@ class RequestHandler(
             "update" -> groupHandler.updateGroup(request.data)
             "leave" -> groupHandler.leaveGroup(request.data)
             "checkAvailability" -> groupHandler.checkGroupNameAvailability(request.data)
+            "adduser" -> groupHandler.addUser(request.data)
         }
     }
 
@@ -42,6 +43,8 @@ class RequestHandler(
             "changeName" -> userHandler.changeName(request.data)
             "getProfiles" -> userHandler.getProfiles(request.data)
             "getUserGroups" -> userHandler.getUserGroups(request.data)
+            "updateProfile" -> userHandler.updateProfile(request.data)
+            "StartPrivateChat" -> userHandler.startPrivateChat(request.data)
         }
     }
 }

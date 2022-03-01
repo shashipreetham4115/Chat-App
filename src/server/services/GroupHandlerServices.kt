@@ -7,4 +7,5 @@ interface GroupHandlerServices {
     fun createGroup(data: Any)
     fun joinGroup(data: Any)
     fun checkGroupNameAvailability(data: Any)
+    fun addUser(data: Any)
 }

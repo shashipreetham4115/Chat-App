@@ -28,6 +28,7 @@ class GroupUi(
         try {
             loop@ while (active) {
                 getGroup()
+                if (group.isPrivate) return chatUi.fetchMessages(groupId)
                 if (!group.users.contains(number)) {
                     println("\nYou are removed from the group")
 //                AuthUi.loggedInUser?.groups?.remove(groupId)
