@@ -58,19 +58,15 @@ class AuthUi(
         val number = InputUtil.getPhoneNumber()
         if (number == -1L) return
         var password = InputUtil.getPassword()
-        while (true) {
-            if (password == "--q") return
-            writer.writeObject(
-                Request("auth", "signin", AuthData(number, password, ""))
-            )
-            loggedInUser = try {
-                reader.readObject() as Profile
-            } catch (_: Exception) {
-                null
-            }
-            if (loggedInUser != null) break
+        if (password == "--q") return
+        writer.writeObject(
+            Request("auth", "signin", AuthData(number, password, ""))
+        )
+        loggedInUser = try {
+            reader.readObject() as Profile
+        } catch (_: Exception) {
             println("Incorrect Number or Password")
-            password = InputUtil.getPassword()
+            null
         }
         if (loggedInUser != null) println("\nWelcome back ${loggedInUser?.name}")
     }

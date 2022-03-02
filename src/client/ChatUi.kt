@@ -51,13 +51,18 @@ class ChatUi(
     }
 
     private fun printChat(message: Message, userNames: Map<Long, String> = mapOf()) {
-        if (message.sender == number) {
+        val date = message.sendTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a"))
+        val senderNumber = message.sender
+        val senderName = message.senderName
+        var name = if (userNames.contains(senderNumber)) userNames[senderNumber] else senderName
+        if (message.isServer) {
+            if (senderNumber == number)
+                println("\r[$date] You ${if (message.content == "is group admin now") "are group admin now" else message.content}")
+            else println("\r[$date] $name ${message.content}")
+        } else if (senderNumber == number) {
             printDate(message.content, message.sendTime)
             println()
         } else {
-            val date = message.sendTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a"))
-            var name =
-                if (userNames[message.sender] == "" || userNames[message.sender] == null) message.senderName else userNames[message.sender]
             if (name == "") name = "\b"
             println("\r[$date $name] ${message.content}")
         }

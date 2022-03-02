@@ -44,8 +44,10 @@ class ClientHandler(private val socket: Socket) : Runnable {
             reader.close()
             writer.close()
             socket.close()
-            if (Server.clients[client.number]?.size!! > 1) Server.clients[client.number]?.remove(this)
-            else Server.clients.remove(client.number)
+            if (Server.clients.contains(client.number)) {
+                if (Server.clients[client.number]?.size!! > 1) Server.clients[client.number]?.remove(this)
+                else Server.clients.remove(client.number)
+            }
         } catch (ex: IOException) {
             ex.printStackTrace()
         }

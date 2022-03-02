@@ -20,7 +20,6 @@ class ClientUi(
         val executor: ExecutorService = Executors.newSingleThreadExecutor()
     }
 
-
     override fun displayMenu() {
         try {
             loop@ while (true) {

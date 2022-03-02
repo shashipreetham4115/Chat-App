@@ -9,7 +9,7 @@ class ChatHandler(private val clientHandler: ClientHandler) : ChatHandlerService
         val message = data as Message
         val userNumbers = Server.groups[message.group]?.users
         if (userNumbers != null) {
-            if (message.content == "--q" || (message.sender != 0L && !userNumbers.contains(message.sender))) {
+            if (message.content == "--q" || (!message.isServer && !userNumbers.contains(message.sender))) {
                 clientHandler.client.active = ""
                 return clientHandler.writer.writeObject(message)
             }

@@ -14,13 +14,11 @@ class GroupHandler(private val clientHandler: ClientHandler, private val chatHan
             Server.groups[group.id] = group
             clientHandler.client.groups.remove(group.id)
             Server.users[clientHandler.client.number]?.groups?.remove(group.id)
-            val message = "${clientHandler.client.name} left the group"
-            chatHandler.broadcastMessage(Message(0L, "", message, group.id))
+            broadcastServerMessage("left the group", group.id)
             if (group.admins.isEmpty() && group.users.isNotEmpty()) {
                 group.admins.add(group.users.first())
                 val user = Server.users[group.users.first()]
-                val message = "${user?.name ?: group.users.first()} is now group admin"
-                chatHandler.broadcastMessage(Message(0L, "", message, group.id))
+                broadcastServerMessage("is group admin now", group.id, group.users.first(), user?.name!!)
             }
         }
         clientHandler.writer.writeObject(false)
@@ -37,8 +35,7 @@ class GroupHandler(private val clientHandler: ClientHandler, private val chatHan
             user?.groups?.add(groupId)
             group.users.add(number.toLong())
             clientHandler.writer.writeObject(group)
-            val message = "${clientHandler.client.name} added ${user?.name} in the group"
-            chatHandler.broadcastMessage(Message(0L, "", message, groupId))
+            broadcastServerMessage("added ${user?.name} in the group", groupId)
         } else clientHandler.writer.writeObject(null)
     }
 
@@ -83,8 +80,7 @@ class GroupHandler(private val clientHandler: ClientHandler, private val chatHan
             Server.users[clientHandler.client.number]?.groups?.add(group.id)
             clientHandler.writer.writeObject(true)
             clientHandler.writer.writeObject(group.id)
-            val message = "${clientHandler.client.name} created the group"
-            chatHandler.broadcastMessage(Message(0L, "", message, group.id))
+            broadcastServerMessage("created the group", group.id)
         }
     }
 
@@ -100,8 +96,7 @@ class GroupHandler(private val clientHandler: ClientHandler, private val chatHan
             Server.users[clientHandler.client.number]?.groups?.add(group.id)
             clientHandler.writer.writeObject(true)
             clientHandler.writer.writeObject(groupId)
-            val message = "${clientHandler.client.name} joined in the group"
-            chatHandler.broadcastMessage(Message(0L, "", message, groupId))
+            broadcastServerMessage("joined in the group", groupId)
         }
     }
 
@@ -113,19 +108,28 @@ class GroupHandler(private val clientHandler: ClientHandler, private val chatHan
 
     private fun broadcastGroupUpdateMessage(oldGroup: Group, group: Group) {
         val message: String = if (oldGroup.groupName != group.groupName) {
-            "${clientHandler.client.name} changed the group name from ${oldGroup.groupName} to ${group.groupName}"
+            "changed the group name from ${oldGroup.groupName} to ${group.groupName}"
         } else if (oldGroup.users.size > group.users.size) {
             val removedUsers = (oldGroup.users - group.users).map { Server.users[it]?.name }.joinToString(", ")
-            "${clientHandler.client.name} removed $removedUsers from group"
+            "removed $removedUsers from group"
         } else if (oldGroup.admins.size > group.admins.size) {
             val removedUsers =
                 (oldGroup.admins - group.admins).map { Server.users[it]?.name }.joinToString(", ")
-            "${clientHandler.client.name} changed role of $removedUsers from admin to user"
+            "changed role of $removedUsers from admin to user"
         } else {
             val removedUsers = (group.admins - oldGroup.admins).map { Server.users[it]?.name }.joinToString(", ")
-            "${clientHandler.client.name} changed role of $removedUsers from user to admin"
+            "changed role of $removedUsers from user to admin"
         }
-        chatHandler.broadcastMessage(Message(0L, "", message, group.id))
+        broadcastServerMessage(message, group.id)
+    }
+
+    private fun broadcastServerMessage(
+        message: String,
+        groupId: String,
+        sender: Long = clientHandler.client.number,
+        senderName: String = clientHandler.client.name
+    ) {
+        chatHandler.broadcastMessage(Message(sender, senderName, message, groupId, true))
     }
 
 }
