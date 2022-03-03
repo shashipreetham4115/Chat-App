@@ -31,7 +31,6 @@ class ClientHandler(private val socket: Socket) : Runnable {
                 }
             }
         } catch (ex: IOException) {
-            writer.writeObject(null)
             closeConnection()
         }
     }
@@ -47,15 +46,14 @@ class ClientHandler(private val socket: Socket) : Runnable {
 
     private fun closeConnection() {
         try {
-            reader.close()
-            writer.close()
-            socket.close()
+            if (reader != null) reader.close()
+            if (writer != null) writer.close()
+            if (socket.isConnected) socket.close()
             if (Server.clients.contains(client.number)) {
                 if (Server.clients[client.number]?.size!! > 1) Server.clients[client.number]?.remove(this)
                 else Server.clients.remove(client.number)
             }
         } catch (ex: IOException) {
-            ex.printStackTrace()
         }
     }
 }
