@@ -1,17 +1,18 @@
 package client
 
 import client.services.AuthUiServices
+import client.services.ErrorHandlerServices
 import client.utils.InputUtil
-import entities.AuthData
 import entities.Profile
 import entities.Request
+import entities.User
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 
 class AuthUi(
     private var writer: ObjectOutputStream,
     private var reader: ObjectInputStream,
-    private val errHandler: ErrorHandler
+    private val errHandler: ErrorHandlerServices
 ) : AuthUiServices {
     companion object {
         var loggedInUser: Profile? = null
@@ -59,9 +60,7 @@ class AuthUi(
         if (number == -1L) return
         var password = InputUtil.getPassword()
         if (password == "--q") return
-        writer.writeObject(
-            Request("auth", "signin", AuthData(number, password, ""))
-        )
+        writer.writeObject(Request("auth", "signin", User("", number, password)))
         loggedInUser = try {
             reader.readObject() as Profile
         } catch (_: Exception) {
@@ -82,7 +81,7 @@ class AuthUi(
         if (name == "--q") return
         val password = InputUtil.getPassword()
         if (password == "--q") return
-        writer.writeObject(Request("auth", "signup", AuthData(number, password, name)))
+        writer.writeObject(Request("auth", "signup", User(name, number, password)))
         loggedInUser = try {
             reader.readObject() as Profile
         } catch (_: Exception) {

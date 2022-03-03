@@ -2,6 +2,7 @@ package server
 
 import entities.Profile
 import entities.Request
+import server.services.RequestHandlerServices
 import java.io.IOException
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
@@ -12,7 +13,7 @@ class ClientHandler(private val socket: Socket) : Runnable {
     var client: Profile = Profile("", 0)
     val writer = ObjectOutputStream(socket.getOutputStream())
     private val reader = ObjectInputStream(socket.getInputStream())
-    private val requestHandler = RequestHandler(
+    private val requestHandler: RequestHandlerServices = RequestHandler(
         AuthHandler(this),
         ChatHandler(this),
         GroupHandler(this, ChatHandler(this)),
@@ -22,10 +23,15 @@ class ClientHandler(private val socket: Socket) : Runnable {
     override fun run() {
         try {
             while (socket.isConnected) {
-                val obj = reader.readObject() as Request
-                requestHandler(obj)
+                try {
+                    val obj = reader.readObject() as Request
+                    requestHandler(obj)
+                } catch (_: Exception) {
+                    writer.writeObject(null)
+                }
             }
         } catch (ex: IOException) {
+            writer.writeObject(null)
             closeConnection()
         }
     }

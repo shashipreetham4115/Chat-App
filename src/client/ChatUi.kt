@@ -1,6 +1,7 @@
 package client
 
 import client.services.ChatUiServices
+import client.services.ErrorHandlerServices
 import entities.Message
 import entities.Request
 import java.io.IOException
@@ -15,14 +16,14 @@ class ChatUi(
     private val socket: Socket,
     private val writer: ObjectOutputStream,
     private val reader: ObjectInputStream,
-    private val errHandler: ErrorHandler
+    private val errHandler: ErrorHandlerServices
 ) : ChatUiServices {
 
     private lateinit var groupId: String
     private var number: Long = AuthUi.loggedInUser?.number ?: 0L
     private var name: String = AuthUi.loggedInUser?.name ?: ""
     private var active = true
-    private lateinit var thread: Future<*>
+    private lateinit var future: Future<*>
 
     override fun fetchMessages(groupId: String) {
         try {
@@ -43,7 +44,7 @@ class ChatUi(
             for (message in messages) {
                 printChat(message, userNames)
             }
-            thread = ClientUi.executor.submit(messageWriter())
+            future = ClientUi.executor.submit(messageWriter())
             messageReader()
         } catch (_: Exception) {
             errHandler.closeConnection()
@@ -73,7 +74,7 @@ class ChatUi(
     private fun messageReader() {
         try {
             printDate("")
-            while (socket.isConnected && !thread.isDone) {
+            while (socket.isConnected && !future.isDone) {
                 var message = ""
                 if (active) message = readLine() ?: ""
 //                name = AuthUi.loggedInUser?.name ?: ""

@@ -1,6 +1,5 @@
 package server
 
-import entities.AuthData
 import entities.Profile
 import entities.User
 import server.services.AuthHandlerServices
@@ -8,7 +7,7 @@ import server.services.AuthHandlerServices
 class AuthHandler(private val clientHandler: ClientHandler) : AuthHandlerServices {
 
     override fun signIn(data: Any) {
-        val authData = data as AuthData
+        val authData = data as User
         if (Server.users.contains(authData.number)) {
             val user = Server.users[authData.number]
             if (user?.password == authData.password) {
@@ -23,11 +22,10 @@ class AuthHandler(private val clientHandler: ClientHandler) : AuthHandlerService
     }
 
     override fun signUp(data: Any) {
-        val authData = data as AuthData
+        val authData = data as User
         if (!Server.users.contains(authData.number)) {
-            val user = User(authData.name, authData.number, authData.password)
-            val profile = Profile(user.name, user.number, "", user.groups)
-            Server.users[authData.number] = user
+            val profile = Profile(authData.name, authData.number, "", authData.groups)
+            Server.users[authData.number] = authData
             clientHandler.client = profile
             Server.clients[profile.number] = mutableListOf(clientHandler)
             return clientHandler.writer.writeObject(profile)

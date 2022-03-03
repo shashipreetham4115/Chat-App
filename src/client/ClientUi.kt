@@ -13,7 +13,7 @@ class ClientUi(
     private val reader: ObjectInputStream,
     private val authUi: AuthUiServices,
     private val groupUi: GroupUiServices,
-    private val errHandler: ErrorHandler
+    private val errHandler: ErrorHandlerServices
 ) : ClientServices {
 
     companion object {

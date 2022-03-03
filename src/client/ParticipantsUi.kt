@@ -1,5 +1,6 @@
 package client
 
+import client.services.ErrorHandlerServices
 import client.services.ParticipantsUiServices
 import client.utils.InputUtil
 import entities.Group
@@ -11,9 +12,8 @@ import java.io.ObjectOutputStream
 class ParticipantsUi(
     private val writer: ObjectOutputStream,
     private val reader: ObjectInputStream,
-    private val errHandler: ErrorHandler
-) :
-    ParticipantsUiServices {
+    private val errHandler: ErrorHandlerServices
+) : ParticipantsUiServices {
 
     private lateinit var groupId: String
     private lateinit var profiles: List<Profile>
@@ -52,10 +52,7 @@ class ParticipantsUi(
         val strFormatter = "%1\$-5s%2\$-13s%3\$-20s%4\$-5s"
         println()
         println(String.format(strFormatter, "S.No", "Number", "Name", "Role"))
-        if (profiles.isEmpty()) {
-            println("\nYou are only user in group")
-            return
-        }
+        if (profiles.isEmpty()) return println("\nYou are only user in group")
         for ((sno, profile) in profiles.withIndex()) {
             println(
                 String.format(

@@ -1,6 +1,7 @@
 package client
 
 import client.services.ChatUiServices
+import client.services.ErrorHandlerServices
 import client.services.GroupUiServices
 import client.services.ParticipantsUiServices
 import client.utils.InputUtil
@@ -12,7 +13,7 @@ import java.io.ObjectOutputStream
 class GroupUi(
     private var writer: ObjectOutputStream,
     private var reader: ObjectInputStream,
-    private val errHandler: ErrorHandler,
+    private val errHandler: ErrorHandlerServices,
     private val chatUi: ChatUiServices,
     private val participantsUi: ParticipantsUiServices
 ) : GroupUiServices {
@@ -86,11 +87,11 @@ class GroupUi(
         writer.reset()
         active = reader.readObject() as Boolean
     }
-
-    private fun deleteGroup() {
-        writer.writeObject(Request("group", "delete", group.id))
-        active = reader.readObject() as Boolean
-    }
+//
+//    private fun deleteGroup() {
+//        writer.writeObject(Request("group", "delete", group.id))
+//        active = reader.readObject() as Boolean
+//    }
 
     private fun getGroup() {
         writer.writeObject(Request("group", "get", groupId))

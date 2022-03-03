@@ -1,3 +1,5 @@
 package client.services
 
-interface ClientServices : DisplayMenuServices
+interface ClientServices {
+    fun displayMenu()
+}

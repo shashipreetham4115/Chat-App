@@ -10,6 +10,6 @@ data class Message(
     var content: String,
     val group: String,
     val isServer: Boolean = false,
-    val sendTime: LocalDateTime = LocalDateTime.now(),
+    val sentTime: LocalDateTime = LocalDateTime.now(),
     val id: String = UUID.randomUUID().toString()
 ) : Serializable

@@ -1,9 +1,6 @@
 package client;
 
-import client.services.AuthUiServices;
-import client.services.ChatUiServices;
-import client.services.ClientServices;
-import client.services.GroupUiServices;
+import client.services.*;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -14,7 +11,7 @@ class ClientDriver {
         Socket socket;
         ObjectOutputStream writer;
         ObjectInputStream reader;
-        ErrorHandler errHandler = null;
+        ErrorHandlerServices errHandler = null;
         try {
             socket = new Socket("localhost", 8000);
             writer = new ObjectOutputStream(socket.getOutputStream());

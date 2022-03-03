@@ -1,5 +1,6 @@
 package client
 
+import client.services.ErrorHandlerServices
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.net.Socket
@@ -9,8 +10,8 @@ class ErrorHandler(
     private val socket: Socket?,
     private val writer: ObjectOutputStream?,
     private val reader: ObjectInputStream?
-) {
-    fun closeConnection() {
+) : ErrorHandlerServices {
+    override fun closeConnection() {
         try {
             if (socket?.isConnected == true) socket.close()
             reader?.close()
